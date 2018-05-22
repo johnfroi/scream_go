@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<style>
+     body{
+            margin: 0px;
+            text-align: center;
+              
+            background-image: url(../bg.png);
+            background-attachment: fixed;
+            background-size: cover;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            color: white;
+          } 
+    #main_start{
+        position: fixed;
+        width: 100%;
+        text-align:center;
+        top: 40%;
+    }
+    #main_start button{
+        width: 200px;
+        border-style: none;
+        border-radius: 10;
+        font-size: 1.2em;
+        height: 40px; 
+        cursor: pointer;
+        transition: 1s;
+    }
+    #main_start button:hover{
+        background-color: deepskyblue;
+    }
+    #gamesover{
+                position: absolute;
+                top: 30%;
+                left:43%;
+                display: none;
+               
+            }
+     .hr{
+                width: 200px;
+                height: 60px;
+                font-family:Agency FB;
+                font-size: 30px;
+                border-style: none;
+                border-radius: 10px;
+    }
+    .hr:hover{
+        background-color: aliceblue;
+    }
+    #can{
+        position: fixed;
+        box-shadow: 0px 0px 3px dodgerblue;
+    }
+</style>
+<html id="ht">
+    <head> 
+    </head>
+    <body id="bod">
+        <div id="d"></div>
+    <audio id="audio" autoplay></audio>
+    <script src="bubble.js"></script>
+    <center>
+    <canvas id="can" width="1200" height="600"></canvas>
+    </center>
+    <h1 style="text-align:center;position:fixed;top:10px;width:100%;color:white">Score :<span id="score_holder">0</span >
+    </h1>
+    <div id="main_start">
+        <button onclick="startz()">Start</button><br> <br>
+        <button onclick="window.location='../home.html'">Back</button>
+    </div>
+     <div id="gamesover">
+            <center>
+                <h1 style="color:white;font-family:Showcard Gothic;">Gameover</h1>
+                <button class="hr" onclick="window.location='../home.html'">Home</button>
+                <br><br>
+                <button class="hr" onclick="Restart()">Restart</button>
+            </center>
+        </div>    
+<script>
+    function after_image(x,y,r,cc,xxr){
+        this.x=x;
+        this.y=y;
+        this.r=r;
+        this.opac=0.3;
+        this.color=cc;
+        this.xr=xxr;
+        this.scaale=1;
+        this.draw=()=>{
+            var coloor;
+            if(this.color=="dodgerblue"){
+                coloor="rgba(0,155,255,"+this.opac+")";
+            }else if(this.color=="violet"){
+                coloor="rgba(255,0,255,"+this.opac+")";
+            }else{
+                 coloor="rgba(255,255,0,"+this.opac+")";
+            }
+            c.save();
+                c.translate(this.x+(player.w/2),(engine.coordz.y_axis(this.y,world.ypos,this.xr*(180/Math.PI)*-1))+(player.h/2));
+                c.rotate(this.r*(Math.PI/180));
+                c.scale(this.scaale,this.scaale);
+                c.fillStyle=coloor;
+                c.fillRect((player.w/2)*-1,(player.h/2)*-1,player.w,player.h);
+            c.restore();
+            this.x-=3;
+            this.scaale-=0.02;
+            this.opac-=0.01; 
+            this.r-=0.1;
+        }
+    }
+    function player_death_effect(){
+        this.xpos;
+        this.ypos;
+        this.spedx=0;
+        this.spedy=0;
+        this.w=5;
+        this.h=5;
+        this.color;
+        this.init=function(x,y,sx,sy,color){
+            this.xpos=x;
+            this.ypos=y;
+            this.spedx=sx;
+            this.spedy=sy;
+            this.color=color;
+        }
+        this.draw=function(){
+            //check if oarticle hits in left side
+            if(this.xpos<=0){
+                //if sped is negative we make positive 
+                if(this.spedx<0){
+                    this.spedx=this.spedx-(this.spedx*2);
+                }else{
+                    this.spedx=this.spedx*-1;
+                }
+                //vice versa . then same sa bottom 
+                if(this.spedy<0){
+                    this.spedy=this.spedy-(this.spedy*2);
+                }else{
+                    this.spedy=this.spedy*-1;
+                } 
+            }
+            if(this.xpos+this.w>1200){
+                if(this.spedx<0){
+                    this.spedx=this.spedx-(this.spedx*2);
+                }else{
+                    this.spedx=this.spedx*-1;
+                }
+                if(this.spedy<0){
+                    this.spedy=this.spedy-(this.spedy*2);
+                }else{
+                    this.spedy=this.spedy*-1;
+                } 
+            }
+            if(this.ypos<=0){
+                if(this.spedx<0){
+                    this.spedx=this.spedx-(this.spedx*2);
+                }else{
+                    this.spedx=this.spedx*-1;
+                }
+                if(this.spedy<0){
+                    this.spedy=this.spedy-(this.spedy*2);
+                }else{
+                    this.spedy=this.spedy*-1;
+                } 
+            }
+            if(this.ypos+this.y>=600){
+                if(this.spedx<0){
+                    this.spedx=this.spedx-(this.spedx*2);
+                }else{
+                    this.spedx=this.spedx*-1;
+                }
+                if(this.spedy<0){
+                    this.spedy=this.spedy-(this.spedy*2);
+                }else{
+                    this.spedy=this.spedy*-1;
+                } 
+            }
+            //we decrement the hieght and width of particles to make a fading effect :
+            this.w-=Math.random()*0.1;
+            this.h-=Math.random()*0.1;
+            //draw the particle in in canvas
+            c.fillStyle=this.color;
+            c.fillRect(this.xpos+=this.spedx,this.ypos+=this.spedy,this.w,this.h);
+        }
+    }
+    function player_is_dead_(){
+        var rad=360/10;
+        var rot=0;
+        var speed=player.speed+30;
+        for(var i=0;i<10;i++){
+            var xx=100*Math.cos(rot*(Math.PI/180))+player.x;
+            var yy=100*Math.sin(rot*(Math.PI/180))+player.y;
+            var sx=xx-player.x;
+            var sy=yy-player.y;
+            var distance=Math.sqrt(yy*yy+xx*xx);
+            var sped=distance/speed;
+            _player_death_particle.push(new player_death_effect());
+            _player_death_particle[_player_death_particle.length-1].init(player.x+15,player.y+15,sx/sped,sy/sped,player.color);
+            rot+=rad;
+        }document.getElementById("gamesover").style.display="block";
+    }
+    
+    function particle(x,y,w){
+        this.x=x;
+        this.y=y;
+        this.speedx=4;
+        this.gravity=0;
+        this.w=w;
+        this.draw=()=>{
+            c.fillStyle=player.color;
+            c.fillRect(this.x,this.y,this.w,this.w);
+            this.x-=this.speedx;
+            this.w-=0.1;
+			this.y+=this.gravity;
+			this.gravity+=0.1;
+        };
+    }
+    function obs(){
+        this.x=1200;
+        this.topz={color:'grey',x:0,y:0,h:0};
+        this.bottomz={color:'grey',x:0,y:0,h:0};
+        this.middlez={color:null,x:0,y:0,h:0};
+        this.rotz=0;
+        this.switched=false;
+        this.colz=[''];
+        this.init=(c_index)=>{
+            var rand=Math.floor(Math.random()*600);
+            if(rand<90){
+                rand=120;
+            }
+            
+            this.topz.y=-400;
+            this.topz.h=rand;
+            var r=(800-rand)-200;
+            this.bottomz.y=400-r;
+            this.bottomz.h=r;
+        }
+        this.draw=()=>{  
+            if(this.topz.color=="grey"){
+                c.fillStyle=this.topz.color;
+                c.fillRect(this.x-5,engine.coordz.y_axis(this.topz.y,world.ypos,world.roty),60,800); 
+            }
+            if(player.dead==false){
+                this.x-=4;
+            }
+            c.fillStyle=this.topz.color;
+            c.fillRect(this.x,engine.coordz.y_axis(this.topz.y,world.ypos,world.roty),50,this.topz.h); 
+            c.fillStyle=this.bottomz.color; 
+            c.fillRect(this.x,engine.coordz.y_axis(this.bottomz.y,world.ypos,world.roty),50,this.bottomz.h);
+            var xz =engine.distancez(this.x+25,engine.coordz.y_axis(this.topz.y,world.ypos,world.roty),player.x+15,player.y+15);
+           if(xz.disx<=42&&xz.disy<=this.topz.h+15&&player.dead==false){
+               player_is_dead_();
+               player.dead=true;
+           }
+            if(this.switched==false&&this.topz.color!="grey"){ 
+            c.save();
+                c.translate(this.x+25,engine.coordz.y_axis(this.topz.y,world.ypos,world.roty)+this.topz.h+60);
+                c.rotate(this.rotz*(Math.PI/180));
+                c.fillStyle="grey";
+                c.fillRect(-20,-20,40,40);
+                c.restore();
+                this.rotz+=2;
+                if(this.rotz>=360){
+                    this.rotz=0;
+                }   if(engine.distancez(this.x+25,engine.coordz.y_axis(this.topz.y,world.ypos,world.roty)+this.topz.h+60,player.x+15,player.y+15).dis<40){
+                    this.switched=true;
+                    addscore();
+                }
+            }
+            var bxz =engine.distancez(this.x+25,engine.coordz.y_axis(this.bottomz.y,world.ypos,world.roty)+this.bottomz.h,player.x+15,player.y+15);
+            if(bxz.disx<=42&&bxz.disy<=ob[0].bottomz.h-10&&player.dead==false){
+               player_is_dead_();
+               player.dead=true;
+           }
+        }
+    }
+    
+    var ob=[]; 
+    var bubble=[];
+    ob.push(new obs);
+    ob[0].init();
+    var score=0;
+    var particlez=[]; 
+    var after_image_=[];
+    var _player_death_particle=[];
+    var engine={
+        movetowardz:(px,py,tx,ty,s)=>{
+            var x=tx-px;
+            var y=ty-py;
+            var d=Math.sqrt(y*y+x*x);
+            if(d<2){
+                s=0;
+            }
+            var sped=d/s;
+            return {xspeed:x/sped,yspeed:y/sped};
+        },
+        distancez:(px,py,tx,ty)=>{
+            var x=tx-px;
+            var y=ty-py;
+            var d=Math.sqrt(y*y+x*x);
+            var dx=Math.sqrt(x*x);
+            var dy=Math.sqrt(y*y);
+            return {disx:dx,disy:dy,dis:d};
+        },
+        rotation:(px,py,tx,ty)=>{
+            var x=tx-px;
+            var y=ty-py;
+            var xr=Math.atan(x);
+            var yr=Math.atan(y);
+            return ({rot:Math.atan2(x,y),rx:xr,yr:yr});
+        },
+        coordz:{
+        x_axis:function(x,wx,r){
+            return (x*Math.cos(r*(Math.PI/180))+wx);
+        },
+        y_axis:function(y,wy,r){
+            return (y*Math.sin(r*(Math.PI/180))+wy);
+            
+            }
+        },
+        audio_context:{data:null,
+                       cont:null,
+                        mp:null,
+                        is_ready:false,
+                        analyser:null,
+                        start_audio:()=>{
+                            this.cont=new AudioContext();
+                            this.analyser=this.cont.createAnalyser();
+                            navigator.getUserMedia=navigator.getUserMedia || navigator.webkitGetUserMedia;
+                            navigator.getUserMedia({ video : false, audio : true }, callback, console.log);
+                            function callback(stream) {
+                                this.mp=this.cont.createMediaStreamSource(stream);
+                                this.mp.connect(this.analyser); 
+                                engine.audio_context.is_ready=true;
+                            }
+                        }, 
+                        get_data:(dat)=>{
+                            var da=new Uint8Array(this.analyser.frequencyBinCount);
+                            this.analyser.getByteFrequencyData(da);
+                            return da;
+                        }
+                    }   
+    }
+    var world={xpos:600,ypos:300,rotx:0,roty:90}; 
+    var mic_icon=new Image();
+    mic_icon.src='mic.png';
+    var idiot_modez=true;
+    var sensitivity=40;
+    engine.audio_context.start_audio();
+    var grav=0;
+    var c=can.getContext('2d'); 
+    var player={r:0,w:30,h:30,x:230,y:300,clearx:30,cleary:300,speed:0,color:"null",moving:"not",dead:false};
+    var spawntime=40;
+    var timerz=0;
+    var gamestart=false;
+    function main(){
+        if(gamestart==true){
+            window.requestAnimationFrame(main);
+        }
+        c.fillStyle="#111111";
+        c.fillRect(0,0,1200,600);
+        if(player.dead==false){ 
+            timerz+=0.2;
+            if(timerz>spawntime){
+                timerz=0;
+                ob.push(new obs());
+                ob[ob.length-1].init();
+            }
+            player_draw();
+            if(idiot_modez==true){idiotMode();}
+            else{
+                normal_mode();
+            } 
+        }else{
+            player_death_paticle_draw_();
+        }
+		
+        worldz();
+        
+        for(var i=0;i<ob.length;i++){
+            ob[i].draw();
+        }
+        for(var i=0;i<ob.length;i++){
+            if(ob[i].x<-30){
+                ob.splice(i,1);
+            }
+        }
+         for(var i=0;i<bubble.length;i++){
+            bubble[i].playz();
+        }
+    }
+    function player_death_paticle_draw_(){
+        for(var i=0;i<_player_death_particle.length;i++){
+            _player_death_particle[i].draw();
+            if(_player_death_particle[i].h<0){
+                _player_death_particle.splice(i,1);
+            }
+        }  
+    }
+    var delay=0;
+    function player_draw(){
+        c.save();
+        c.translate(player.x+player.w/2,player.y+player.h/2);
+        c.rotate(player.r*(Math.PI/180));
+        c.fillStyle=player.color;
+        c.fillRect((player.w/2)*-1,(player.h/2)*-1,player.w,player.h); 
+        c.restore();
+		var rs=3;
+		if(player.speed+grav<0){
+			rs=((engine.audio_context.get_data()[0]-sensitivity)/50)*9;
+		}
+        particlez.push(new particle(player.x+(Math.random()*25),player.y+30,Math.random()*rs));
+		
+        var par_check=[];
+        for(var i=0;i<particlez.length;i++){
+            particlez[i].draw();
+            if(particlez[i].w<0){
+                par_check.push(i);
+            }
+        }
+        for(var i=0;i<par_check.length;i++){
+            particlez.splice(par_check[i],1);
+        }
+        player.r-=(player.speed+grav);
+        if(player.r>=360){
+            player.r=0;
+        }
+        if(player.y<=0||player.y+player.h>=600){
+            player_is_dead_();
+            player.dead=true;
+        }
+        var dcx=engine.distancez(player.x,player.y,world.xpos,world.ypos);  
+        after_image_.push(new after_image(player.x,dcx.disy,player.r,player.color,
+                                         engine.rotation(player.x,player.y,world.xpos,world.ypos).yr));
+        for(var i=0;i<after_image_.length;i++){
+            after_image_[i].draw();
+            if( after_image_[i].opac<0){
+                after_image_.splice(i,1);
+            }
+        }
+    } 
+    function idiotMode(){
+        if(engine.audio_context.get_data()[0]-sensitivity>0){
+            player.speed= ((engine.audio_context.get_data()[0]-sensitivity)/50)*4*-1; 
+            grav=0;  
+        }
+		if(player.y<=10){
+            player.speed=0;
+        }
+        if(world.ypos>200&&world.ypos<399){
+         if(player.y>=200){
+            if(player.y>=400){
+                if(player.speed-grav>0){
+                    world.ypos-=player.speed-grav;
+                }else{
+                    player.y+=player.speed-grav;
+                }
+            }else{ 
+                player.y+=player.speed-grav;
+            }
+        }
+        else{
+            if(player.speed-grav<0){
+                world.ypos-=player.speed-grav;
+            }else{
+                player.y+=player.speed-grav;
+                }
+            }
+        }else{ 
+            if(world.ypos>=399){
+                if(player.speed-grav<0){
+                    world.ypos=399;player.y+=player.speed-grav;
+                }else{
+                    if(player.y>400){ 
+                     world.ypos-=player.speed-grav;
+                    }else{
+                        world.ypos=399;player.y+=player.speed-grav;
+                    }
+                    
+                }
+            }
+            if(world.ypos<=200){
+               if(player.speed-grav>0){
+                    world.ypos=200;
+                   player.y+=player.speed-grav;
+                }else{
+                      if(player.y<200){ 
+                     world.ypos-=player.speed-grav;
+                    }else{
+                        world.ypos=200;player.y+=player.speed-grav;
+                    }
+                } 
+            }
+        }
+        grav-=0.19;  
+        daw_analyser();
+        
+    }
+    function normal_mode(){ 
+        if(world.ypos>200&&world.ypos<399){
+         if(player.y>=200){
+            if(player.y>=400){
+                if(player.speed-grav>0){
+                    world.ypos-=player.speed-grav;
+                }else{
+                    player.y+=player.speed-grav;
+                }
+            }else{ 
+                player.y+=player.speed-grav;
+            }
+        }
+        else{
+            if(player.speed-grav<0){
+                world.ypos-=player.speed-grav;
+            }else{
+                player.y+=player.speed-grav;
+                }
+            }
+        }else{ 
+            if(world.ypos>=399){
+                if(player.speed-grav<0){
+                    world.ypos=399;player.y+=player.speed-grav;
+                }else{
+                    if(player.y>400){ 
+                     world.ypos-=player.speed-grav;
+                    }else{
+                        world.ypos=399;player.y+=player.speed-grav;
+                    }
+                    
+                }
+            }
+            if(world.ypos<=200){
+               if(player.speed-grav>0){
+                    world.ypos=200;
+                   player.y+=player.speed-grav;
+                }else{
+                      if(player.y<200){ 
+                     world.ypos-=player.speed-grav;
+                    }else{
+                        world.ypos=200;player.y+=player.speed-grav;
+                    }
+                } 
+            }
+        }
+        grav-=0.19; 
+        particlez.push(new particle(player.x+(Math.random()*40),player.y+20,Math.random()*8));
+    }
+    bod.onkeypress=(e)=>{
+       if(e.keyCode==32&&idiot_modez==false){
+           grav=0;
+           player.speed=-6; 
+           sound_bubble();
+       }
+    }
+    function sound_bubble(){
+        bubble.push(new bub());
+        bubble[bubble.length-1].init();
+    }
+    function daw_analyser(){
+        c.drawImage(mic_icon,0,0,22,20,15,540,30,30);
+        c.fillStyle="#000000";
+        c.fillRect(40,560,150,5);
+        var x=0;
+        if(engine.audio_context.get_data()[0]-sensitivity>0){
+            x=((engine.audio_context.get_data()[0]-sensitivity)/50)*150;
+        }
+        if(x>150){
+            x=150;
+        }
+        c.fillStyle=player.color;
+        c.fillRect(40,560,x,5);
+        }
+    function worldz(){
+        c.fillStyle="white";
+        c.fillRect(world.xpos,world.ypos,1,1);  
+        var secret=1200/10;
+        var ss=-600;
+        for(var i=0;i<10;i++){   
+            c.fillStyle="rgba(255,255,255,0.3)";
+            c.fillRect(engine.coordz.x_axis(-600,world.xpos,world.rotx),engine.coordz.y_axis(ss,world.ypos,world.roty),1200,1);  
+            ss+=secret;
+        }
+    }
+    var col=0;
+    change_color();
+    function change_color(){
+        var rx=['dodgerblue','violet','yellow']; 
+        player.color=rx[col];
+        rx.splice(col,1);
+        for(var i=0;i<ob.length;i++){
+            if(ob[i].switched==false){
+                var xc=Math.floor(Math.random()*rx.length);
+                var xxc;
+                if(xc==1){
+                    xxc=0;
+                }else{
+                    xxc=1;
+                }
+                ob[i].bottomz.color=rx[xc];
+                ob[i].topz.color=rx[xxc];
+                break;
+            }
+        }
+      col++;
+    if(col>=3){
+        col=0;
+    }
+        
+    }
+    function addscore(){
+        score++;
+        score_holder.innerHTML=score;
+        change_color();
+    }
+    can.addEventListener('mousemove',(e)=>{
+        mx=e.pageX-can.offsetLeft;
+        my=e.pageY-can.offsetTop;
+    },false);
+    function startz(){
+        gamestart=true;
+        main_start.style.display="none";
+        window.setTimeout(
+            ()=>{main();},900
+        );
+    } 
+    window.onload=()=>{
+        document.getElementById('can').style.top=((window.innerHeight-600)/2)+"px";
+        document.getElementById('can').style.left=((window.innerWidth-1200)/2)+"px";
+        main();
+    }
+    function Restart(){
+        window.location="h.html";
+    }
+   
+</script> 
+</body>
+</html>
